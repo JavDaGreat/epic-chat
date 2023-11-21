@@ -1,10 +1,26 @@
 import { useAuthState } from "react-firebase-hooks/auth";
-import { auth } from "@/app/firebase";
+import { auth, db } from "@/app/firebase";
+import { doc, getDoc, setDoc, serverTimestamp } from "firebase/firestore";
 import { useEffect } from "react";
+
 export default function useAuthUser() {
   const [user] = useAuthState(auth);
+  console.log(user);
+
   useEffect(() => {
-    console.log(user);
+    if (user) {
+      const userRef = doc(db, `users/${user.uid}`);
+      getDoc(userRef).then((snapshot) => {
+        console.log(snapshot.exists());
+        if (!snapshot.exists()) {
+          setDoc(userRef, {
+            name: user.displayName,
+            photoURL: user.photoURL,
+            timestamp: serverTimestamp(),
+          });
+        }
+      });
+    }
   }, [user]);
 
   return user;

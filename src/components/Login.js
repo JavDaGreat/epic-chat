@@ -12,12 +12,12 @@ export default function Login() {
   return (
     <div className=" bg-white w-96 h-96 p-6 m-2 rounded flex flex-col  items-center justify-evenly">
       <Image src={logo} height={80} width={80} alt="Logo" />
-      <h2 className=" font-bold text-xl ">Sign in to Epic chat</h2>
+      <h2 className=" font-bold text-2xl ">Sign in to Epic chat</h2>
       <Button
         onClick={() => signInWithGoogle()}
         className="bg-blue-800 hover:bg-blue-950"
         variant="contained">
-        Sign in with google <FcGoogle size={20} />
+        Sign in with google &nbsp; <FcGoogle size={20} />
       </Button>
     </div>
   );
