@@ -12,7 +12,8 @@ export default function SideSectionListItem({ item }) {
             style={{ width: 45, height: 45 }}
             src={
               item.photoURL ||
-              `https://avatars.dicebear.com/api/jdenticon/${item.id}.svg`
+              `https://api.dicebear.com/7.x/icons/svg?seed=${item.name}
+              `
             }
           />
           <h2 className="text-lg font-bold break-all  ">{item.name}</h2>

@@ -5,6 +5,15 @@ import Avatar from "@mui/material/Avatar";
 import IconButton from "@mui/material/IconButton";
 import ExitToAppIcon from "@mui/icons-material/ExitToApp";
 import {
+  addDoc,
+  serverTimestamp,
+  collection,
+  query,
+  where,
+  getDocs,
+} from "firebase/firestore";
+
+import {
   Home,
   Message,
   PeopleAlt,
@@ -19,6 +28,11 @@ import DialogActions from "@mui/material/DialogActions";
 import DialogContent from "@mui/material/DialogContent";
 import DialogContentText from "@mui/material/DialogContentText";
 import DialogTitle from "@mui/material/DialogTitle";
+import { auth, db } from "@/app/firebase";
+import { useRouter } from "next/navigation";
+import useRooms from "@/hooks/useRooms";
+import useUsers from "@/hooks/useUsers";
+import useChats from "@/hooks/useChats";
 
 const tabs = [
   {
@@ -39,17 +53,52 @@ export default function SideSection({ user }) {
   const [menu, setMenu] = useState(1);
   const [isCreatingRoom, setCreatingRoom] = useState(false);
   const [roomName, setRoomName] = useState("");
-  const data = [
-    {
-      id: 1,
-      name: "Are_You_Serious",
-      photoURL:
-        "https://lh3.googleusercontent.com/a/ACg8ocIISZwoHc7x8IqITjSNhA9Aj_fVXlERh2PjGX8J6oaOIg=s96-c",
-    },
-  ];
+  const [searchResults, setSearchResults] = useState([]);
+  const router = useRouter();
+  const rooms = useRooms();
+  const users = useUsers(user);
+  const chats = useChats(user);
 
   async function createRoom() {
-    console.log(roomName);
+    if (roomName?.trim()) {
+      const roomRef = collection(db, "rooms");
+      const newRoom = await addDoc(roomRef, {
+        name: roomName,
+        timestamp: serverTimestamp(),
+      });
+      setCreatingRoom(false);
+      setRoomName("");
+      setMenu(2);
+      router.push(`/?roomId =${newRoom.id}`);
+    }
+  }
+
+  async function searchUsersAndRooms(event) {
+    event.preventDefault();
+    const searchValue = event.target.elements.search.value;
+    const userQuery = query(
+      collection(db, "users"),
+      where("name", "==", searchValue)
+    );
+    const roomQuery = query(
+      collection(db, "rooms"),
+      where("name", "==", searchValue)
+    );
+    const userSnapshot = await getDocs(userQuery);
+    const roomsSnapshot = await getDocs(roomQuery);
+
+    const userResults = userSnapshot?.docs.map((doc) => {
+      const id =
+        doc.id > user.uid ? `${doc.id}${user.uid}` : `${user.uid}${doc.id}`;
+      return { id, ...doc.data() };
+    });
+    const roomResults = roomsSnapshot?.docs.map((doc) => ({
+      id: doc.id,
+      ...doc.data(),
+    }));
+    const searchResults = [...(userResults || []), ...(roomResults || [])];
+    setMenu(4);
+    setSearchResults(searchResults);
   }
 
   return (
@@ -66,7 +115,10 @@ export default function SideSection({ user }) {
           </section>
 
           <section>
-            <IconButton>
+            <IconButton
+              onClick={() => {
+                auth.signOut(), router.push("/");
+              }}>
               <ExitToAppIcon />
             </IconButton>
           </section>
@@ -74,7 +126,9 @@ export default function SideSection({ user }) {
       </section>
 
       <section className="h-20 w-full bg-slate-100 flex ">
-        <form className="rounded-md p-2 m-1 w-full flex items-center">
+        <form
+          onSubmit={searchUsersAndRooms}
+          className="rounded-md p-2 m-1 w-full flex items-center">
           <div className="relative w-full">
             <input
               type="text"
@@ -100,13 +154,13 @@ export default function SideSection({ user }) {
       </section>
 
       {menu === 1 ? (
-        <SideSectionList title="Chats" data={data} />
+        <SideSectionList title="Chats" data={chats} />
       ) : menu === 2 ? (
-        <SideSectionList title="Rooms" data={data} />
+        <SideSectionList title="Rooms" data={rooms} />
       ) : menu === 3 ? (
-        <SideSectionList title="Users" data={data} />
+        <SideSectionList title="Users" data={users} />
       ) : menu === 4 ? (
-        <SideSectionList title="SearchResults" data={data} />
+        <SideSectionList title="Search Results" data={searchResults} />
       ) : null}
 
       <div

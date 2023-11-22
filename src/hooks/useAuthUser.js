@@ -5,13 +5,11 @@ import { useEffect } from "react";
 
 export default function useAuthUser() {
   const [user] = useAuthState(auth);
-  console.log(user);
 
   useEffect(() => {
     if (user) {
       const userRef = doc(db, `users/${user.uid}`);
       getDoc(userRef).then((snapshot) => {
-        console.log(snapshot.exists());
         if (!snapshot.exists()) {
           setDoc(userRef, {
             name: user.displayName,
