@@ -165,11 +165,9 @@ export default function SideSection({ user }) {
 
       <div
         id="add"
-        className="absolute bottom-0 left-0 p-4 flex justify-center items-center">
-        <AddCircle
-          sx={{ fontSize: 50 }}
-          onClick={() => setCreatingRoom(true)}
-        />
+        className="absolute bottom-0 left-0 p-4 flex justify-center items-center cursor-pointer transition-transform transform-gpu  active:scale-95"
+        onClick={() => setCreatingRoom(true)}>
+        <AddCircle sx={{ fontSize: 50 }} />
       </div>
 
       <div>

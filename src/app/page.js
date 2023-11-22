@@ -5,6 +5,7 @@ import SideSection from "@/components/SideSection";
 import Image from "next/image";
 import backimg from "../../public/background.jpg";
 import useAuthUser from "@/hooks/useAuthUser";
+import Chat from "@/components/Chat";
 
 export default function Home() {
   const user = useAuthUser();
@@ -27,8 +28,8 @@ export default function Home() {
   if (!user) return content;
 
   return (
-    <main className="flex justify-center ">
-      <div className=" -z-10 fixed w-screen h-screen ">
+    <main className="flex justify-center min-h-screen  ">
+      <div className=" -z-10 fixed w-screen h-screen  bg-slate-700">
         <Image
           src={backimg}
           alt="background pic"
@@ -41,7 +42,9 @@ export default function Home() {
           <SideSection user={user} />
         </div>
 
-        <div className=" col-span-2"> Hej</div>
+        <div className="col-span-2 ">
+          <Chat user={user} />
+        </div>
       </section>
     </main>
   );

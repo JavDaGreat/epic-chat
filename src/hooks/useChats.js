@@ -1,12 +1,6 @@
 import { db } from "@/app/firebase";
 import { useCollection } from "react-firebase-hooks/firestore";
-import {
-  addDoc,
-  serverTimestamp,
-  collection,
-  query,
-  orderBy,
-} from "firebase/firestore";
+import { collection, query, orderBy } from "firebase/firestore";
 
 export default function useChats(user) {
   const [snapshot] = useCollection(
