@@ -102,7 +102,7 @@ export default function SideSection({ user }) {
   }
 
   return (
-    <div className="bg-white h-screen w-full felx flex-col  ">
+    <div className="bg-white h-screen w-full felx flex-col relative  ">
       <section>
         <section
           className="flex h-20 items-center sm:p-2 
@@ -165,7 +165,7 @@ export default function SideSection({ user }) {
 
       <div
         id="add"
-        className="absolute bottom-0 left-0 p-4 flex justify-center items-center cursor-pointer transition-transform transform-gpu  active:scale-95"
+        className="absolute bottom-0 right-0  p-4 flex items-center cursor-pointer  "
         onClick={() => setCreatingRoom(true)}>
         <AddCircle sx={{ fontSize: 50 }} />
       </div>
