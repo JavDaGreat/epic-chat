@@ -65,6 +65,7 @@ export default function SideSection({ user }) {
       const newRoom = await addDoc(roomRef, {
         name: roomName,
         timestamp: serverTimestamp(),
+        photoURL: `https://api.dicebear.com/7.x/icons/svg?seed=${roomName}`,
       });
       setCreatingRoom(false);
       setRoomName("");

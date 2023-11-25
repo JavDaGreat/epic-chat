@@ -3,7 +3,9 @@ import Avatar from "@mui/material/Avatar";
 import userRoom from "@/hooks/userRoom";
 import React, { useState } from "react";
 import { useSearchParams } from "next/navigation";
-import { AttachFile, Menu, MoreVert } from "@mui/icons-material";
+import { AttachFile, MoreVert } from "@mui/icons-material";
+import Menu from "@mui/material/Menu";
+
 import MenuItem from "@mui/material/MenuItem";
 import IconButton from "@mui/material/IconButton";
 import ChatFooter from "./ChatFooter";
@@ -16,8 +18,16 @@ import {
   updateDoc,
   doc,
   getDocs,
+  deleteDoc,
+  query,
 } from "firebase/firestore";
-import { getStorage, ref, uploadBytes, getDownloadURL } from "firebase/storage";
+import {
+  getStorage,
+  ref,
+  uploadBytes,
+  getDownloadURL,
+  deleteObject,
+} from "firebase/storage";
 
 import { db } from "@/app/firebase";
 import useChatMessages from "@/hooks/useChatMessages";
@@ -27,11 +37,13 @@ export default function Chat({ user }) {
   const [file, setFile] = useState(null);
   const [src, setSrc] = useState(null);
   const [audioId, setAudioId] = useState("");
+  const [openMenu, setOpenMenu] = useState(null);
+  const [isDeleting, setDeleting] = useState(false);
 
   const [input, setInput] = useState("");
   const userId = user.uid;
-  const query = useSearchParams();
-  const roomId = query.get("roomId") ?? "";
+  const Query = useSearchParams();
+  const roomId = Query.get("roomId") ?? "";
 
   const storage = getStorage();
   const messages = useChatMessages(roomId);
@@ -98,12 +110,47 @@ export default function Chat({ user }) {
 
     setInput("");
   }
+  async function deleteRoom() {
+    setOpenMenu(null);
+    setDeleting(true);
+
+    try {
+      const userChatRef = doc(db, `users/${userId}/chats/${roomId}`);
+      const roomRef = doc(db, `rooms/${roomId}`);
+      const roomMessagesRef = collection(db, `rooms/${roomId}/messages`);
+      const roomMessages = await getDocs(query(roomMessagesRef));
+      const audioFiles = [];
+      const files = [];
+      roomMessages?.docs.forEach((doc) => {
+        if (doc.data().audioName) {
+          audioFiles.push(doc.data().audioName);
+        } else if (doc.data().fileName) {
+          files.push(doc.data().fileName);
+        }
+      });
+      await Promise.all([
+        deleteDoc(userChatRef),
+        deleteDoc(roomRef),
+        ...roomMessages.docs.map((doc) => deleteDoc(doc.ref)),
+        ...files.map((fileName) =>
+          deleteObject(ref(storage, `files/${fileName}`))
+        ),
+        ...audioFiles.map((audioName) =>
+          deleteObject(ref(storage, `audio/${audioName}`))
+        ),
+      ]);
+    } catch (error) {
+      console.log("Error", error);
+    } finally {
+      setDeleting(false);
+    }
+  }
 
   if (!room) return null;
 
   return (
-    <div className="text-red-600 flex flex-col h-screen ">
-      <header className="flex p-4 w-full bg-slate-600 justify-between">
+    <div className=" flex flex-col h-screen ">
+      <header className="flex p-4 w-[99%] bg-slate-100 justify-between mx-1 rounded-md">
         <div className="flex items-center gap-3">
           <Avatar
             className="hidden xs:inline"
@@ -115,23 +162,31 @@ export default function Chat({ user }) {
 
         <div className="flex items-center justify-center">
           <input
-            id="file"
-            accept="*"
             type="file"
+            accept="image/*"
+            id="file"
             className="hidden"
             onChange={(e) => upload(e)}
           />
 
           <IconButton>
             <label htmlFor="file">
-              <AttachFile className="text-red-400 " />
+              <AttachFile />
             </label>
           </IconButton>
           <IconButton>
-            <MoreVert className="text-red-400 " />
+            <MoreVert
+              className=" "
+              onClick={(e) => setOpenMenu(e.currentTarget)}
+            />
           </IconButton>
-          <Menu id="menu" className="hidden">
-            <MenuItem>Delete Room</MenuItem>
+          <Menu
+            className="mt-2"
+            anchorEl={openMenu}
+            open={!!openMenu}
+            onClose={() => setOpenMenu(null)}
+            id="menu">
+            <MenuItem onClick={deleteRoom}>Delete Room</MenuItem>
           </Menu>
         </div>
       </header>

@@ -1,9 +1,16 @@
-export default function ChatMessages({ messages, user, roomId }) {
+import { Circle } from "@mui/icons-material";
+import AudioPlayer from "./AudioPlayer";
+export default function ChatMessages({
+  setAudioId,
+  audioId,
+  messages,
+  user,
+  roomId,
+}) {
   if (!messages) return null;
 
   return messages.map((message) => {
     const isSender = message.uid === user.uid;
-    console.log(message.message);
 
     return (
       <div
@@ -21,7 +28,7 @@ export default function ChatMessages({ messages, user, roomId }) {
 
           {message.fileURL === "uploading" ? (
             <div>
-              <CircularPrgress />
+              <Circle />
             </div>
           ) : message.fileURL ? (
             <div>
@@ -31,8 +38,18 @@ export default function ChatMessages({ messages, user, roomId }) {
           ) : (
             <span>{message.message}</span>
           )}
-
-          <span className="text-xs self-end mt-1">{message.time}</span>
+          {message.audioName ? (
+            <AudioPlayer
+              sender={isSender}
+              roomId={roomId}
+              id={roomId}
+              audioId={audioId}
+              audioUrl={message.audioUrl}
+              setAudioId={setAudioId}
+            />
+          ) : (
+            <span className="text-xs self-end mt-1">{message.time}</span>
+          )}
         </div>
       </div>
     );

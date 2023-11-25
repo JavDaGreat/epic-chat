@@ -1,3 +1,4 @@
+import { db } from "@/app/firebase";
 import recordAudio from "@/app/recordAudio";
 import {
   CancelRounded,
@@ -6,6 +7,17 @@ import {
   Send,
 } from "@mui/icons-material";
 import { useEffect, useRef, useState } from "react";
+import {
+  setDoc,
+  addDoc,
+  serverTimestamp,
+  collection,
+  updateDoc,
+  doc,
+  getDocs,
+} from "firebase/firestore";
+import { getStorage, ref, uploadBytes, getDownloadURL } from "firebase/storage";
+import { nanoid } from "nanoid";
 
 export default function ChatFooter({
   input,
@@ -22,6 +34,7 @@ export default function ChatFooter({
 
   const record = useRef();
   const timerInterval = useRef();
+  const storage = getStorage();
 
   useEffect(() => {
     if (isRecording) {
@@ -55,11 +68,61 @@ export default function ChatFooter({
     setAudioId("");
   }
 
-  function stopRecording() {
+  async function stopRecording() {
     clearInterval(timerInterval.current);
     setRecording(false);
-    record.current.stop();
+    const audio = await record.current.stop();
     setDuration("00:00");
+    return audio;
+  }
+
+  async function finishRecording() {
+    const audio = await stopRecording();
+    const { audioFile, audioName } = await audio;
+    sendAudio(audioFile, audioName);
+  }
+  const options = {
+    weekday: "short",
+    month: "short",
+    day: "numeric",
+    hour: "numeric",
+    minute: "numeric",
+    hour12: false,
+  };
+
+  async function sendAudio(audioFile, audioName) {
+    await setDoc(doc(db, `users/${user.id}/chats/${roomId}`), {
+      name: room.name,
+      photoURL: room.photoURL,
+      timestamp: serverTimestamp(),
+    });
+
+    const newDocRef = await addDoc(collection(db, `rooms/${roomId}/messages`), {
+      name: user.displayName,
+      uid: user.uid,
+      timeStamp: serverTimestamp(),
+      time: new Date().toLocaleString("en-GB", options),
+      audioUrl: "uploading",
+      audioName,
+    });
+
+    if (audioFile) {
+      await uploadBytes(ref(storage, `audio/${audioName}`), audioFile);
+
+      const url = await getDownloadURL(ref(storage, `audio/${audioName}`));
+
+      await updateDoc(newDocRef, { audioUrl: url });
+      console.log("Document updated with audio URL", url);
+    }
+  }
+
+  function audioInputChange(e) {
+    const audioFile = e.target.files[0];
+    const audioName = nanoid();
+    if (audioFile) {
+      setAudioId("");
+      sendAudio(audioFile, audioName);
+    }
   }
 
   const canRecord =
@@ -69,17 +132,18 @@ export default function ChatFooter({
     <div className="flex items-center justify-center m-1 bg-green-600 rounded-full text-white w-8 h-8 ">
       <button onClick={canSendMessage ? sendMessage : startRecording}>
         {" "}
-        {input ? (
+        {input || file ? (
           <Send fontSize="small" />
         ) : (
           <>
-            <MicRounded />{" "}
+            <MicRounded />
             <input
               className=" hidden "
               type="file"
               id="capture"
               accept="audio/*"
               capture
+              onChange={audioInputChange}
             />
           </>
         )}
@@ -92,7 +156,7 @@ export default function ChatFooter({
       <CancelRounded onClick={stopRecording} color="#f20519" />
       <div className="h-2 w-2 bg-red-700 rounded-full animate-blink mx-2"></div>
       <div>{duration}</div>
-      <CheckCircleRounded color="success" />
+      <CheckCircleRounded color="success" onClick={finishRecording} />
     </div>
   );
 

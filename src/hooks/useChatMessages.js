@@ -16,7 +16,6 @@ const useMessages = (roomId) => {
     id: doc.id,
     ...doc.data(),
   }));
-
   return messages;
 };
 
