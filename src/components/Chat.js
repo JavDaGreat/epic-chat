@@ -157,7 +157,7 @@ export default function Chat({ user }) {
             src={room.photoURL}
             alt={room.name}
           />
-          <h3>{room.name}</h3>
+          <h3 className="text-lg font-bold">{room.name}</h3>
         </div>
 
         <div className="flex items-center justify-center">
