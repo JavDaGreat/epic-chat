@@ -201,7 +201,7 @@ export default function Chat({ user }) {
           audioId={audioId}
           messages={messages}
           user={user}
-          roomdId={roomId}
+          roomId={roomId}
         />
       </div>
 

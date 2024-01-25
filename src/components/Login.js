@@ -1,6 +1,5 @@
 "use client";
-import Image from "next/image";
-import logo from "../app/icon.png";
+import logo from "../../public/icon.png";
 import { Button } from "@mui/material";
 import { FcGoogle } from "react-icons/fc";
 import { useSignInWithGoogle } from "react-firebase-hooks/auth";
@@ -11,7 +10,12 @@ export default function Login() {
 
   return (
     <div className=" bg-white w-96 h-96 p-6 m-2 rounded flex flex-col  items-center justify-evenly">
-      <Image src={logo} height={80} width={80} alt="Logo" />
+      <img
+        src="https://dl.dropboxusercontent.com/scl/fi/pcxufw5tfwh26r1fc0t62/icon.png?rlkey=gz4g0xzu4qe9h5z5czmm4um52&dl=0"
+        height={80}
+        width={80}
+        alt="Logo"
+      />
       <h2 className=" font-bold text-2xl ">Sign in to Epic chat</h2>
       <Button
         onClick={() => signInWithGoogle()}

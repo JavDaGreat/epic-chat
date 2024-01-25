@@ -1,7 +1,7 @@
 import React from "react";
 import { CircularProgress } from "@mui/material";
 import SideSectionListItem from "./SideSectionListItem";
-import { CancelOutlined, SearchOutlined } from "@mui/icons-material";
+import { CancelOutlined } from "@mui/icons-material";
 
 export default function SideSectionList({ title, data }) {
   if (!data) {

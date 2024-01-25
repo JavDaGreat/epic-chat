@@ -6,10 +6,11 @@ export default function useChats(user) {
   const [snapshot] = useCollection(
     query(
       collection(db, `users/${user.uid}/chats`),
-      orderBy("timestamp", "desc")
+      orderBy("timeStamp", "desc")
     )
   );
-  const chats = snapshot?.docs.map((doc) => ({
+
+  const chats = snapshot?.docs?.map((doc) => ({
     id: doc.id,
     ...doc.data(),
   }));
