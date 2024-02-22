@@ -19,3 +19,8 @@ Connect and chat seamlessly with Epic Chat. Key features include:
      npm install
      npm run dev
      ```
+
+
+     ## Authors
+
+* **Javad S.**
